@@ -12,7 +12,14 @@
   entorno Linux. Aquí se dejaron `Dockerfile`, `odoo.conf` y `entrypoint.sh` listos para esa construcción.
 - **Estado:** solucionado por migración de la prueba al entorno de integración continua de la plataforma.
 
-## 2. GitHub CLI no estaba instalado
+## 2. Northflank exige tarjeta pese a anunciar plan «sin tarjeta»
+
+- **Síntoma:** al dar de alta la cuenta Sandbox aparece un paso de pago para un cobro de $0; al introducir la tarjeta, «no se puede verificar el método de pago».
+- **Decisión:** no se reintentó con otra tarjeta. La restricción del proyecto prohíbe cualquier servicio que exija tarjeta, así que se descarta Northflank.
+- **Resolución:** migración a **Render Free** (web Docker + Postgres), que permite alta y despliegue sin método de pago. La comparativa y la justificación se actualizaron en `informe/comparativa.md`.
+- **Estado:** resuelto por cambio de plataforma.
+
+## 3. GitHub CLI no estaba instalado
 
 - **Síntoma:** `gh: El término 'gh' no se reconoce...`.
 - **Resolución:** instalación silenciosa con
@@ -20,7 +27,7 @@
   Quedó en `C:\Program Files\GitHub CLI\gh.exe` (versión 2.105.0).
 - **Estado:** resuelto. Queda pendiente solo la autorización interactiva del usuario (`gh auth login`).
 
-## 3. Adaptaciones de Odoo 20 confirmadas desde el código del módulo
+## 4. Adaptaciones de Odoo 20 confirmadas desde el código del módulo
 
 - `res.users` usa `group_ids` en Odoo 20 (el módulo usa `has_group`, que es estable).
 - La vista de lista `sale.sale_order_tree` es `<list>`; los xpath usados son compatibles.

@@ -17,17 +17,24 @@ Odoo 20 con `sale_management` necesita aproximadamente **1 GB de RAM** para arra
 | Oracle Cloud Always Free | VM ARM 4 OCPU / 24 GB + Autonomous DB | 24 GB | Autonomous DB 2 CPU / 2 GB (never expire) | Normalmente **sí** para verificarse | Sin caducidad mientras haya actividad | Sí | Descartado: requiere tarjeta y registro humano; más complejo de automatizar |
 | Neon (solo como BD alternativa) | Free permanente, 100 proyectos | n/a | 1 GB/projecto, 100 CU-h, scale-to-zero a los 5 min; **no pausa projects por inactividad** | No | Datos conservados; compute suspendido cuando ocioso | n/a | Buena alternativa de BD si el addon de Northflank no alcanzara |
 
-## Decisión
+## Decisión inicial y cambio (18/11/2026)
 
-Se elige **Northflank Sandbox** porque es el único servicio evaluado que cumple simultáneamente:
+Inicialmente se eligió **Northflank Sandbox**. Sin embargo, al crear la cuenta la consola **exigió introducir y verificar un método de pago even para un cobro de $0**, y la verificación fue rechazada. Esto incumple la restricción obligatoria «100 % gratuito, sin tarjeta», por lo que **Northflank queda descartado** y no se insistió con otra tarjeta.
 
-1. **Sin tarjeta de crédito.**
-2. **Siempre encendido** (a diferencia de Render, Railway y Koyeb).
-3. **Base de datos PostgreSQL incluida** y permanente.
-4. Permite **construir desde Dockerfile** y exponer el **puerto 8070**.
-5. Con `nf-compute-50` (0.5 vCPU / 1 GB) para Odoo y un addon PostgreSQL pequeño, el consumo total ronda los **$19–20/mes**, dentro del límite gratuito de $20.
+### Decisión final: **Render (plan Free)**
 
-> Nota operativa: si la consola rechaza la combinación por el límite de $20, se usa `nf-compute-50` para Odoo y un addon PostgreSQL de 0.1 vCPU/256 MB; si aun así no cabe, se migraría la BD a Neon Free (sin tarjeta, permanente) manteniendo Northflank solo para el contenedor.
+| Servicio | Plan elegido | Coste | Tarjeta | Detalle |
+|---|---|---|---|---|
+| Web Odoo | `free` (0.1 CPU / 512 MB RAM) | $0 | **No** | Docker desde repositorio; el contenedor debe escuchar en el puerto que Render inyecta como `$PORT`. Mapeo documentado: Odoo escucha `$PORT` (8070 por defecto en local) y el puerto público del servicio es 443/HTTPS. |
+| PostgreSQL | Render Postgres `free` (256 MB RAM, 1 GB disco) | $0 | **No** | Misma cuenta, misma región; se conecta por red privada. Caduca a los 30 días (con 14 días de gracia). Para una revisión académica en los próximos días es suficiente; se documenta la limitación. |
+
+**Justificación del cambio:** Render es el único servicio evaluado que, sin pedir tarjeta, permite desplegar un contenedor Docker y una base PostgreSQL administrada. Sus contrapartidas (512 MB de RAM, suspensión tras 15 min de inactividad y BD de 30 días) se mitigan así:
+
+- RAM: `workers = 0`, `max_cron_threads = 0`, `db_maxconn = 5`, sin demo y un solo proceso para reducir la huella de Odoo.
+- Suspensión: Render muestra una página de arranque y levanta el servicio en ~1 min al abrir la URL; se documenta en el PDF.
+- Caducidad de la BD: se registra la fecha de creación y se avisa de que hay que recrearla antes de 30 días si se necesita más adelante.
+
+Fuentes añadidas: https://render.com/docs/free y https://render.com/pricing (consultados de nuevo el 18/11/2026).
 
 ## Fuentes consultadas (18/11/2026)
 
