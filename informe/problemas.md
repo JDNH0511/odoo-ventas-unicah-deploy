@@ -25,11 +25,31 @@
 - **Resolución:** instalación silenciosa con
   `winget install --id GitHub.cli -e --accept-source-agreements --accept-package-agreements --disable-interactivity`.
   Quedó en `C:\Program Files\GitHub CLI\gh.exe` (versión 2.105.0).
-- **Estado:** resuelto. Queda pendiente solo la autorización interactiva del usuario (`gh auth login`).
+- **Estado:** resuelto. El usuario autorizó GitHub CLI y `gh auth status` confirmó la cuenta `JDNH0511`; el repositorio quedó público y sin secretos.
 
 ## 4. Adaptaciones de Odoo 20 confirmadas desde el código del módulo
 
 - `res.users` usa `group_ids` en Odoo 20 (el módulo usa `has_group`, que es estable).
 - La vista de lista `sale.sale_order_tree` es `<list>`; los xpath usados son compatibles.
 - Se mantiene `copy=False` en `aprobado_por` para que la copia no quede aprobada.
-- **Estado:** verificado por lectura directa de los 7 archivos del módulo en `C:\Users\joseh\odoo_deploy\ventas_unicah`.
+- **Estado:** verificado por lectura directa de los 7 archivos del módulo en `C:\Users\joseh\odoo_deploy\ventas_unicah` y confirmado en producción por `informe/verificar.py`.
+
+## 5. Render no detectaba el puerto expuesto
+
+- **Síntoma:** el primer deploy terminaba tras ~15 min con `==> No open ports detected on 0.0.0.0, continuing to scan...` y la URL pública agotaba el tiempo de espera.
+- **Diagnóstico:** Odoo escuchaba solo en `127.0.0.1`; Render exige que el contenedor escuche en `0.0.0.0` en el puerto inyectado como `$PORT` (10000 en Render).
+- **Resolución:** se añadió `http_interface = 0.0.0.0` a `odoo.conf` y `entrypoint.sh` reescribe `http_port` a `$PORT`. Commit `1539d24`, deploy manual y servicio `Live` en 56.7 s.
+- **Estado:** resuelto; `GET /web/login` devuelve HTTP 200.
+
+## 6. `admin_passwd` no equivale a la contraseña del usuario `admin`
+
+- **Síntoma:** la verificación XML-RPC no podía autenticar con `ODOO_ADMIN_PASSWD` aunque el valor estaba configurado como contraseña maestra en `odoo.conf`.
+- **Diagnóstico:** Odoo inicializa la BD con el usuario `admin` y contraseña `admin`; la clave maestra solo autoriza operaciones de base de datos.
+- **Resolución:** se autenticó una vez con `admin/admin` y se actualizó la contraseña del usuario `admin` por XML-RPC al valor de `ODOO_ADMIN_PASSWD`, sin mostrarlo en consola ni en capturas.
+- **Estado:** resuelto; la verificación completa quedó en 16/16.
+
+## 7. Impuesto por defecto y API de `copy` en Odoo 20
+
+- **Síntoma:** la primera prueba de umbral marcó 50,000 como aprobable porque el producto de prueba arrastraba un impuesto (total 57,500), y la copia falló por diferencias de firma de `copy()`/`read()`.
+- **Resolución:** el script crea el producto con `taxes_id` vacío, usa dominios planos de Odoo 20 y toma el ID devuelto por `copy()` desde una lista.
+- **Estado:** resuelto; umbral y `copy=False` verificados correctamente.
