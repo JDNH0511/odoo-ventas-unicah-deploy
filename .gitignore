@@ -1,0 +1,9 @@
+secretos.local.txt
+northflank_token.local.txt
+__pycache__/
+*.py[cod]
+.env
+.venv/
+*.log
+.DS_Store
+informe/capturas_tmp/
