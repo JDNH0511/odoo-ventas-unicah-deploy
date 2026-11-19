@@ -53,7 +53,9 @@ styles.add(ParagraphStyle(name="Centro", parent=styles["BodyText"], fontSize=10,
 
 
 def P(text: str, style="Cuerpo") -> Paragraph:
-    return Paragraph(html.escape(str(text)).replace("\n", "<br/>"), styles[style])
+    esc = html.escape(str(text)).replace("\n", "<br/>")
+    esc = esc.replace("&lt;b&gt;", "<b>").replace("&lt;/b&gt;", "</b>")
+    return Paragraph(esc, styles[style])
 
 
 def tabla(datos, anchos, header=True, font_size=9):
@@ -196,15 +198,19 @@ S.append(P(f"Resultado final: <b>{ok} de {len(ver['resultados'])} pruebas correc
 # Problemas
 S.append(P("5. Problemas y resoluciones", "H2"))
 S.append(tabla([
-    ["Problema", "Resolución"],
-    ["Northflank exigió tarjeta pese a anunciar plan gratuito", "Migración inmediata a Render Free, sin método de pago."],
-    ["Docker local bloqueado: WSL2 ausente y sesión sin administrador", "Build validado en el entorno Linux remoto de Render."],
-    ["Render no detectaba el puerto; Odoo escuchaba en loopback", "http_interface=0.0.0.0 + mapeo de $PORT a 10000; deploy Live."],
+    [P("Problema", "Celda"), P("Resolución", "Celda")],
+    [P("Northflank pidió tarjeta aunque anunciaba plan gratuito.", "Celda"),
+     P("Se cambió a Render Free, que no pide método de pago.", "Celda")],
+    [P("Docker no funcionaba en local: faltaba WSL2 y la sesión no tenía permisos de administrador.", "Celda"),
+     P("La imagen se construyó y validó en el entorno Linux de Render.", "Celda")],
+    [P("Render no encontraba el puerto porque Odoo solo escuchaba en la interfaz local.", "Celda"),
+     P("Se configuró http_interface=0.0.0.0 y se asignó el puerto que indica Render ($PORT=10000). El deploy quedó Live.", "Celda")],
 ], [62 * mm, 93 * mm], font_size=8.5))
 S.append(Spacer(1, 3 * mm))
 S.append(P(
-    "Incidencias adicionales documentadas: contraseña maestra vs. contraseña del usuario admin, impuesto por defecto "
-    "en el producto de prueba y diferencias de API de Odoo 20 para dominios y copy()."
+    "También se aclararon tres puntos durante las pruebas: la contraseña maestra de Odoo no es la contraseña del "
+    "usuario admin; el producto de prueba tiene un impuesto aplicado por defecto; y en Odoo 20 cambiaron algunas "
+    "llamadas de la API usadas para dominios y para el campo copy()."
 ))
 
 # Evidencias
@@ -240,10 +246,13 @@ for name, caption in CAPTIONS:
 # Limitaciones y cierre
 S.append(P("7. Limitaciones del plan gratuito", "H2"))
 S.append(tabla([
-    ["Limitación", "Impacto y mitigación"],
-    ["Suspensión por inactividad", "El servicio se duerme tras ~15 min; la primera petición puede tardar cerca de 1 min en responder."],
-    ["Caducidad de la base", "La BD Free caduca el 18/12/2026. Para una revisión académica inmediata es suficiente."],
-    ["Recursos de la BD", "256 MB RAM y 1 GB de almacenamiento; no apto para carga académica intensiva."],
+    [P("Limitación", "Celda"), P("Impacto y mitigación", "Celda")],
+    [P("Suspensión por inactividad", "Celda"),
+     P("El servicio se duerme tras unos 15 minutos sin uso. La primera visita puede tardar cerca de 1 minuto en responder.", "Celda")],
+    [P("Caducidad de la base", "Celda"),
+     P("La base de datos gratuita caduca el 18/12/2026. Para una revisión académica inmediata es suficiente.", "Celda")],
+    [P("Recursos de la base", "Celda"),
+     P("La base tiene 256 MB de RAM y 1 GB de almacenamiento. No es adecuada para un uso académico intensivo.", "Celda")],
 ], [48 * mm, 107 * mm], font_size=8.5))
 
 S.append(P("8. Conclusión", "H2"))
