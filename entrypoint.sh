@@ -67,5 +67,23 @@ else:
     print("BD ya inicializada; omitiendo -i", flush=True)
 PY
 
+# 3.5) Regenerar assets en cada arranque (el disco de Render Free es efímero)
+python3 - <<'PY'
+import os
+import psycopg2
+params = dict(
+    host=os.environ["DB_HOST"], port=int(os.environ.get("DB_PORT", "5432")),
+    user=os.environ["DB_USER"], password=os.environ["DB_PASSWORD"],
+    dbname=os.environ["DB_NAME"],
+)
+conn = psycopg2.connect(**params)
+conn.autocommit = True
+cur = conn.cursor()
+cur.execute("DELETE FROM ir_attachment WHERE url LIKE '/web/assets/%'")
+print("Assets eliminados para regeneracion en este arranque", flush=True)
+cur.close()
+conn.close()
+PY
+
 # 4) Arrancar Odoo
 exec odoo -c /etc/odoo/odoo.conf
